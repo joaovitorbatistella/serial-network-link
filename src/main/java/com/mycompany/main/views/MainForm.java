@@ -8,6 +8,11 @@ import com.fazecast.jSerialComm.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.swing.JFrame;
+import com.mycompany.main.CRC16CCITT;
+import com.mycompany.main.HandleSend;
+import com.mycompany.main.HandleReceive;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 /**
  *
  * @author labhardware01
@@ -55,9 +60,15 @@ public class MainForm extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
         jSeparator4 = new javax.swing.JSeparator();
+        receiveButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         MainFormPanel.setBackground(java.awt.Color.darkGray);
         MainFormPanel.setForeground(new java.awt.Color(255, 255, 255));
@@ -107,6 +118,13 @@ public class MainForm extends javax.swing.JFrame {
         jLabel1.setForeground(java.awt.Color.white);
         jLabel1.setText("or");
 
+        receiveButton.setText("Receive");
+        receiveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                receiveButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout MainFormPanelLayout = new javax.swing.GroupLayout(MainFormPanel);
         MainFormPanel.setLayout(MainFormPanelLayout);
         MainFormPanelLayout.setHorizontalGroup(
@@ -145,8 +163,10 @@ public class MainForm extends javax.swing.JFrame {
                     .addComponent(dropboxTarget, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(22, 22, 22))
             .addGroup(MainFormPanelLayout.createSequentialGroup()
-                .addGap(168, 168, 168)
+                .addGap(61, 61, 61)
                 .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(66, 66, 66)
+                .addComponent(receiveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         MainFormPanelLayout.setVerticalGroup(
@@ -179,7 +199,9 @@ public class MainForm extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(receiveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(15, 15, 15))
         );
 
@@ -203,10 +225,6 @@ public class MainForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void dropboxOriginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxOriginActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_dropboxOriginActionPerformed
-
     private void dropboxTargetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxTargetActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_dropboxTargetActionPerformed
@@ -218,29 +236,211 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_openFileOriginActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        
+        HandleSend handleSend = new HandleSend(
+                                    textAreaOrigin.getText(),
+                                        (String) dropboxOrigin.getSelectedItem()
+                                    );
+        
+        handleSend.startTransaction();
+        
+//        SerialPort commPortOrigin = MainForm.openSerialConnection((String) dropboxOrigin.getSelectedItem());
+//        SerialPort commPortTarget = MainForm.openSerialConnection((String) dropboxTarget.getSelectedItem());
+//        this.addListeners(commPortOrigin, commPortTarget);
+//        
+//        String content;
+//        //content = MainForm.addScapes(textAreaOrigin.getText());
+//        content = textAreaOrigin.getText();
+//        System.out.println("content: " + content);
+//        int idx = 0;
+//        int offset = 0;
+//        int exit = 0;
+//        int frameLength = 5;
+//        byte origin = 00000001;
+//        byte target = 00000010;
+//        do {
+//            String toFraming;
+//            if(exit == 1) {
+//                toFraming = content.substring(offset, content.length());
+//                byte[] frame = MainForm.framming(toFraming, origin);
+//                System.out.println("\nframming: ");
+//                for (int i = 0; i < frame.length; ++i)
+//                    System.out.print((char)frame[i]);
+//                System.out.println("\n");
+//                this.send(commPortOrigin, frame);
+//                break;
+//            } else {
+//                if(content.length()-1 < frameLength) {
+//                    toFraming = content.substring(offset, content.length());
+//                    byte[] frame = MainForm.framming(toFraming, origin);
+//                    System.out.println("\nframming: ");
+//                    for (int i = 0; i < frame.length; ++i)
+//                        System.out.print((char)frame[i]);
+//                    System.out.println("\n");
+//                    this.send(commPortOrigin, frame);
+//                    break;
+//                } 
+//                
+//                toFraming = content.substring(offset, offset+frameLength);
+//                offset+=frameLength;
+//                if((content.length() - offset) < content.length()) {
+//                    exit = 1;
+//                }
+//                
+//            
+//            }
+//            
+//            
+//            byte[] frame = MainForm.framming(toFraming, origin);
+//            System.out.println("\nframming: ");
+//            for (int i = 0; i < frame.length; ++i)
+//                System.out.print((char)frame[i]);
+//            System.out.println("\n");
+//            this.send(commPortOrigin, frame);
+//            idx++;
+//        } while(true);
+    }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
         SerialPort commPortOrigin = SerialPort.getCommPort((String) dropboxOrigin.getSelectedItem());
         SerialPort commPortTarget = SerialPort.getCommPort((String) dropboxTarget.getSelectedItem());
-       
-        commPortTarget.openPort();
-        commPortTarget.addDataListener(new SerialPortDataListener() {
-            @Override
-            public void serialEvent(SerialPortEvent event) {
-                String str = new String(event.getReceivedData(), StandardCharsets.UTF_8);
-                textAreaTarget.setText(str);
-               System.out.println("Read " + str+ " bytes.");
-            }
+        commPortOrigin.closePort();
+        commPortTarget.closePort();
+    }//GEN-LAST:event_formWindowClosing
 
+    private void dropboxOriginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxOriginActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_dropboxOriginActionPerformed
+
+    private void receiveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_receiveButtonActionPerformed
+        // TODO add your handling code here:
+        HandleReceive handleReceive = new HandleReceive(
+                                        (String) dropboxTarget.getSelectedItem(),
+                                         textAreaTarget
+                                    );
+        handleReceive.startReader();
+    }//GEN-LAST:event_receiveButtonActionPerformed
+
+    private static SerialPort openSerialConnection(String commPort)
+    {
+        SerialPort port = SerialPort.getCommPort(commPort);
+        port.openPort();
+        return port;
+    }
+    
+    private void send(SerialPort port, byte[] frame) {
+//        byte origin = 00000001;
+//        byte target = 00000010;
+        
+        port.writeBytes(frame, frame.length);
+    }
+    
+    private void addListeners(SerialPort origin, SerialPort target)
+    {
+        origin.addDataListener(new SerialPortDataListener() {
             @Override
-            public int getListeningEvents() {
-                return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
+            public int getListeningEvents() { return SerialPort.LISTENING_EVENT_DATA_RECEIVED; }
+                @Override
+            public void serialEvent(SerialPortEvent event)
+            {
+                byte[] newData = event.getReceivedData();
+                System.out.println("\nReceived data of size: " + newData.length + "\n");
+                for (int i = 0; i < newData.length; ++i)
+                    System.out.print((byte)newData[i] + " , ");
+                System.out.println("\n");
+                
+//                byte[] ackFrame = MainForm.framming("", target);
+//                commPortOrigin.writeBytes(ackFrame, ackFrame.length);
+            }
+         });
+        
+        target.addDataListener(new SerialPortDataListener() {
+            @Override
+            public int getListeningEvents() { return SerialPort.LISTENING_EVENT_DATA_RECEIVED; }
+                @Override
+            public void serialEvent(SerialPortEvent event)
+            {
+                byte[] newData = event.getReceivedData();
+                System.out.println("\nReceived data of size: " + newData.length + "\n");
+                for (int i = 0; i < newData.length; ++i)
+                    System.out.print((byte)newData[i]);
+                System.out.println("\n");
+            }
+         });
+    }
+    
+
+    private static byte[] framming(String content, byte address)
+    {
+        //char scapeCharacter = '*';
+        //char startTextCharacter = '~';
+        //char endTextCharacter = '|';joao vitor batistella
+        byte startEndFrame = '~';
+        byte ack = 1;
+        
+        String data;
+        //data = scapeCharacter + startTextCharacter + content + scapeCharacter + endTextCharacter;
+        data = content;
+        
+        String hexCRC = CRC16CCITT.main(data);
+        byte[] crc = MainForm.hexStringToByte(hexCRC);
+        
+//        System.out.println("\nstartEndFrame: " + startEndFrame);
+//        System.out.println("\naddress: " + address);
+//        System.out.println("\nack: " + ack);
+//        System.out.println("\ndata: " + data);
+//        System.out.println("\ncrc[0]: " + crc[0]);
+//        System.out.println("\ncrc[1]: " + crc[1]);
+//        System.out.println("\nstartEndFrame: " + startEndFrame +"\n\n");
+        
+        byte[] preFrame = {startEndFrame, address, ack};
+        byte[] dataFrame = data.getBytes();
+        byte[] postFrame = {crc[0], crc[1], startEndFrame};
+
+        return ByteBuffer.allocate(preFrame.length + dataFrame.length + postFrame.length)
+                .put(preFrame)
+                .put(dataFrame)
+                .put(postFrame)
+                .array();
+    }
+    
+    private static byte[] hexStringToByte (String hex)
+    {
+        int val = Integer.parseInt(hex, 16);
+
+        BigInteger big = BigInteger.valueOf(val);
+        byte[] ans = (big.toByteArray());
+        return ans;
+    }
+        
+     private static String addScapes(String content) 
+    {
+        // enquadramento por utilização de byte de inicio e fim de quadro com inserção de caractere de escape
+        char scapeCharacter = '*';
+        
+        int index = 0;
+        for(char ch: content.toCharArray()) {
+            if(ch == scapeCharacter) {
+                content = addChar(content, scapeCharacter, index);
+                index +=2;
+            } else {
+                index++;
             }
             
-        });
-        commPortOrigin.openPort();
-        commPortOrigin.writeBytes(textAreaOrigin.getText().getBytes(), 1);
-        commPortOrigin.closePort();
-    }//GEN-LAST:event_sendButtonActionPerformed
+        }
+        
+        return content;
+    }
+    
+    public static String addChar(String str, char ch, int position) {
+        int len = str.length();
+        char[] updatedArr = new char[len + 1];
+        str.getChars(0, position, updatedArr, 0);
+        updatedArr[position] = ch;
+        str.getChars(position, len, updatedArr, position + 1);
+        return new String(updatedArr);
+    }
 
     /**
      * @param args the command line arguments
@@ -292,6 +492,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JButton openFileOrigin;
+    private javax.swing.JButton receiveButton;
     private javax.swing.JButton sendButton;
     private javax.swing.JTextArea textAreaOrigin;
     private javax.swing.JTextArea textAreaTarget;
