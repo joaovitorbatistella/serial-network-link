@@ -18,9 +18,9 @@ public class Framming {
         //char scapeCharacter = '*';
         //char startTextCharacter = '~';
         //char endTextCharacter = '|';joao vitor batistella
-        byte startEndFrame = '~';
+        byte startEndFrame = 126;
         byte ack = 1;
-        byte endFrameWhenFinish = '\\';
+        byte endFrameWhenFinish = 127;
 
         
         String data;
@@ -40,8 +40,10 @@ public class Framming {
         
         byte[] preFrame = {startEndFrame, address, ack};
         byte[] dataFrame = data.getBytes();
-        byte[] postFrame = {crc[0], crc[1], finish == true ? startEndFrame : endFrameWhenFinish};
+        byte[] postFrame = {crc[0], crc[1], ((finish == true) ? endFrameWhenFinish : startEndFrame)};
 
+        System.out.println("postFrame: " + postFrame);
+        
         return ByteBuffer.allocate(preFrame.length + dataFrame.length + postFrame.length)
                 .put(preFrame)
                 .put(dataFrame)

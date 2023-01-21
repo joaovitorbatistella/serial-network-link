@@ -44,8 +44,9 @@ public class HandleSend {
             do {
                 String toFraming;
                 if (exit == 1) {
+                    System.out.println("exit");
                     toFraming = this.message.substring(offset, this.message.length());
-                    byte[] frame = HandleSend.framming.make(toFraming, this.origin, true);
+                    byte[] frame = HandleSend.framming.make(toFraming, this.origin, false);
                     this.send(frame);
                     if (!this.continueOrNot()) {
                         break;
@@ -55,7 +56,7 @@ public class HandleSend {
                 } else {
                     if (this.message.length() - 1 < frameLength) {
                         toFraming = this.message.substring(offset, this.message.length());
-                        byte[] frame = HandleSend.framming.make(toFraming, this.origin, true);
+                        byte[] frame = HandleSend.framming.make(toFraming, this.origin, false);
                         this.send(frame);
                         if (!this.continueOrNot()) {
                             break;
@@ -66,7 +67,7 @@ public class HandleSend {
 
                     toFraming = this.message.substring(offset, offset + frameLength);
                     offset += frameLength;
-                    byte[] frame = HandleSend.framming.make(toFraming, this.origin, true);
+                    byte[] frame = HandleSend.framming.make(toFraming, this.origin, false);
                     this.send(frame);
 
                     if (!this.continueOrNot()) {
@@ -83,16 +84,18 @@ public class HandleSend {
  
                 idx++;
             } while (true);
+            this.comm.closePort();
 
         } catch (InterruptedException ex) {
+            this.comm.closePort();
             Logger.getLogger(OriginThread.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
     
     private void finishTransaction() {
-        byte[] frame = HandleSend.framming.make("END", this.origin, true);
-        System.out.println("frame: " + Arrays.toString(frame));
+        System.out.println("finish");
+        byte[] frame = HandleSend.framming.make("", this.origin, true);
         this.send(frame);
     }
     
@@ -106,7 +109,6 @@ public class HandleSend {
 
             byte[] readBuffer = new byte[this.comm.bytesAvailable()];
             int numRead = this.comm.readBytes(readBuffer, readBuffer.length);
-            System.out.println(" ack: " + numRead);
             if (numRead > 0) {
                 return true;
             }
@@ -123,7 +125,7 @@ public class HandleSend {
     public void send(byte[] frame) {
 //        byte origin = 00000001;
 //        byte target = 00000010;
-            System.out.println("length: " + frame.length);
+          System.out.println("frame: " + Arrays.toString(frame));
         this.comm.writeBytes(frame, frame.length);
     }
     
