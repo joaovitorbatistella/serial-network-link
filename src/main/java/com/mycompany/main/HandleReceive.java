@@ -52,6 +52,11 @@ public class HandleReceive {
                 int numRead = this.comm.readBytes(readBuffer, readBuffer.length);
                 
                 if(numRead > 0) {
+                    if(this.isLast(readBuffer)) {
+                        this.textAreaTarget.setText(this.message);
+                        this.comm.closePort();
+                        return;
+                    }
                     this.message += this.getText(readBuffer);
 
                     byte[] frame = HandleReceive.framming.make("", target, true);                    
@@ -76,14 +81,32 @@ public class HandleReceive {
     
     private String getText(byte[] frame)
     {
-        byte[] filteredByteArray = Arrays.copyOfRange(frame, 3, frame.length-3);
-                       
-        String message = new String(filteredByteArray, StandardCharsets.UTF_8);
+        String message = "";
+        if(frame.length>=6) {
+            byte[] filteredByteArray = Arrays.copyOfRange(frame, 3, frame.length-3);
+            message = new String(filteredByteArray, StandardCharsets.UTF_8);
+        }
+        
         return message;
+    }
+    
+    private boolean isLast(byte[] frame)
+    {
+        if(frame.length>=6) {
+            byte lastByte = frame[frame.length-1];
+                       
+            if((char) lastByte == 127) {
+                return true;
+            } 
+            return false;
+        }
+        
+        return false;
     }
         
     private static SerialPort openSerialConnection(String commPort)
     {
+        System.out.println("commPort: " + commPort);
         SerialPort port = SerialPort.getCommPort(commPort);
         port.openPort();
         return port;
