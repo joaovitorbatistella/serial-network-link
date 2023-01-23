@@ -41,8 +41,6 @@ public class Framming {
         byte[] preFrame = {startEndFrame, address, ack};
         byte[] dataFrame = data.getBytes();
         byte[] postFrame = {crc[0], crc[1], ((finish == true) ? endFrameWhenFinish : startEndFrame)};
-
-        System.out.println("postFrame: " + postFrame);
         
         return ByteBuffer.allocate(preFrame.length + dataFrame.length + postFrame.length)
                 .put(preFrame)

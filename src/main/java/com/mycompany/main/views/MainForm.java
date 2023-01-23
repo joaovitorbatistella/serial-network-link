@@ -11,8 +11,19 @@ import javax.swing.JFrame;
 import com.mycompany.main.CRC16CCITT;
 import com.mycompany.main.HandleSend;
 import com.mycompany.main.HandleReceive;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  *
  * @author labhardware01
@@ -27,14 +38,14 @@ public class MainForm extends javax.swing.JFrame {
         fillDropBoxes();
     }
     
+    public File file;
+    
     public void fillDropBoxes()
     {
-        dropboxOrigin.addItem("- -");
-        dropboxTarget.addItem("- -"); int i;
+        dropbox.addItem("- -"); int i;
         SerialPort[] commPorts = SerialPort.getCommPorts();
         for(i=0; i<commPorts.length; i++){
-            dropboxOrigin.addItem(commPorts[i].getSystemPortName());
-            dropboxTarget.addItem(commPorts[i].getSystemPortName());  
+            dropbox.addItem(commPorts[i].getSystemPortName());
         } 
     }
 
@@ -48,19 +59,20 @@ public class MainForm extends javax.swing.JFrame {
     private void initComponents() {
 
         MainFormPanel = new javax.swing.JPanel();
-        textAreaOrigin = new javax.swing.JTextArea();
-        textAreaTarget = new javax.swing.JTextArea();
-        dropboxOrigin = new javax.swing.JComboBox<>();
-        dropboxTarget = new javax.swing.JComboBox<>();
+        textArea = new javax.swing.JTextArea();
+        dropbox = new javax.swing.JComboBox<>();
         sendButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
-        openFileOrigin = new javax.swing.JButton();
-        inputFilePickerOrigin = new javax.swing.JTextField();
+        openFile = new javax.swing.JButton();
+        inputFilePicker = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
-        jSeparator4 = new javax.swing.JSeparator();
         receiveButton = new javax.swing.JButton();
+        jSeparator5 = new javax.swing.JSeparator();
+        scrollPane1 = new java.awt.ScrollPane();
+        jLabel3 = new javax.swing.JLabel();
+        txtFrames = new javax.swing.JTextPane();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
@@ -73,29 +85,16 @@ public class MainForm extends javax.swing.JFrame {
         MainFormPanel.setBackground(java.awt.Color.darkGray);
         MainFormPanel.setForeground(new java.awt.Color(255, 255, 255));
 
-        textAreaOrigin.setColumns(20);
-        textAreaOrigin.setLineWrap(true);
-        textAreaOrigin.setRows(5);
-        textAreaOrigin.setFocusCycleRoot(true);
+        textArea.setColumns(20);
+        textArea.setLineWrap(true);
+        textArea.setRows(5);
+        textArea.setFocusCycleRoot(true);
 
-        textAreaTarget.setColumns(20);
-        textAreaTarget.setLineWrap(true);
-        textAreaTarget.setRows(5);
-        textAreaTarget.setFocusCycleRoot(true);
-
-        dropboxOrigin.setBackground(java.awt.Color.gray);
-        dropboxOrigin.setForeground(new java.awt.Color(255, 255, 255));
-        dropboxOrigin.addActionListener(new java.awt.event.ActionListener() {
+        dropbox.setBackground(java.awt.Color.gray);
+        dropbox.setForeground(new java.awt.Color(255, 255, 255));
+        dropbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dropboxOriginActionPerformed(evt);
-            }
-        });
-
-        dropboxTarget.setBackground(java.awt.Color.gray);
-        dropboxTarget.setForeground(new java.awt.Color(255, 255, 255));
-        dropboxTarget.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dropboxTargetActionPerformed(evt);
+                dropboxActionPerformed(evt);
             }
         });
 
@@ -108,10 +107,10 @@ public class MainForm extends javax.swing.JFrame {
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        openFileOrigin.setText("Open");
-        openFileOrigin.addActionListener(new java.awt.event.ActionListener() {
+        openFile.setText("Open");
+        openFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openFileOriginActionPerformed(evt);
+                openFileActionPerformed(evt);
             }
         });
 
@@ -125,90 +124,105 @@ public class MainForm extends javax.swing.JFrame {
             }
         });
 
+        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setText("Frames: ");
+
+        jLabel2.setFont(new java.awt.Font("Liberation Sans", 0, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Estatísticas");
+
         javax.swing.GroupLayout MainFormPanelLayout = new javax.swing.GroupLayout(MainFormPanel);
         MainFormPanel.setLayout(MainFormPanelLayout);
         MainFormPanelLayout.setHorizontalGroup(
             MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(MainFormPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jSeparator1)
-                .addContainerGap())
-            .addGroup(MainFormPanelLayout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MainFormPanelLayout.createSequentialGroup()
-                        .addComponent(inputFilePickerOrigin)
+                    .addGroup(MainFormPanelLayout.createSequentialGroup()
+                        .addComponent(textArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(openFileOrigin))
+                        .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addGap(18, 18, 18))
                     .addGroup(MainFormPanelLayout.createSequentialGroup()
                         .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(MainFormPanelLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(dropboxOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, MainFormPanelLayout.createSequentialGroup()
-                                    .addGap(1, 1, 1)
-                                    .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(jLabel1)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(textAreaOrigin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(18, 18, Short.MAX_VALUE)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                                .addGap(15, 15, 15)
+                                .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(receiveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(MainFormPanelLayout.createSequentialGroup()
+                                .addGap(1, 1, 1)
+                                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel1))
+                            .addComponent(dropbox, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(MainFormPanelLayout.createSequentialGroup()
+                                .addComponent(inputFilePicker, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(openFile)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textAreaTarget, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dropboxTarget, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(22, 22, 22))
-            .addGroup(MainFormPanelLayout.createSequentialGroup()
-                .addGap(61, 61, 61)
-                .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(66, 66, 66)
-                .addComponent(receiveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(MainFormPanelLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtFrames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(MainFormPanelLayout.createSequentialGroup()
+                        .addGap(79, 79, 79)
+                        .addComponent(jLabel2)))
+                .addGap(95, 95, 95))
+            .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(MainFormPanelLayout.createSequentialGroup()
+                    .addGap(176, 176, 176)
+                    .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(344, Short.MAX_VALUE)))
         );
         MainFormPanelLayout.setVerticalGroup(
             MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(MainFormPanelLayout.createSequentialGroup()
+                .addGap(7, 7, 7)
+                .addComponent(dropbox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(scrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(textArea, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
                 .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(MainFormPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(dropboxTarget, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dropboxOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(19, 19, 19)
-                        .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(textAreaOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(textAreaTarget, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(17, 17, 17)
+                        .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(MainFormPanelLayout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(MainFormPanelLayout.createSequentialGroup()
-                                .addGap(11, 11, 11)
-                                .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jSeparator4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(openFileOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(inputFilePickerOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE))
-                    .addComponent(jSeparator2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)))
+                .addGap(12, 12, 12)
+                .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(openFile, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(inputFilePicker, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(receiveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(15, 15, 15))
+                .addContainerGap())
+            .addGroup(MainFormPanelLayout.createSequentialGroup()
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 411, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 1, Short.MAX_VALUE))
+            .addGroup(MainFormPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addGap(30, 30, 30)
+                .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(txtFrames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MainFormPanelLayout.createSequentialGroup()
+                    .addContainerGap(266, Short.MAX_VALUE)
+                    .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(143, 143, 143)))
         );
 
-        textAreaOrigin.getAccessibleContext().setAccessibleName("textAreaOrigin");
-        textAreaTarget.getAccessibleContext().setAccessibleName("textAreaTarget");
-        dropboxOrigin.getAccessibleContext().setAccessibleName("dropboxOrigin");
-        dropboxTarget.getAccessibleContext().setAccessibleName("dropboxTarget");
+        textArea.getAccessibleContext().setAccessibleName("textAreaOrigin");
+        dropbox.getAccessibleContext().setAccessibleName("dropboxOrigin");
         sendButton.getAccessibleContext().setAccessibleName("sendButton");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -225,102 +239,132 @@ public class MainForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void dropboxTargetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxTargetActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_dropboxTargetActionPerformed
-
-    private void openFileOriginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileOriginActionPerformed
-        // TODO add your handling code here:
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setVisible(true);
-    }//GEN-LAST:event_openFileOriginActionPerformed
-
-    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        
-        HandleSend handleSend = new HandleSend(
-                                    textAreaOrigin.getText(),
-                                        (String) dropboxOrigin.getSelectedItem()
-                                    );
-        
-        handleSend.startTransaction();
-        
-//        SerialPort commPortOrigin = MainForm.openSerialConnection((String) dropboxOrigin.getSelectedItem());
-//        SerialPort commPortTarget = MainForm.openSerialConnection((String) dropboxTarget.getSelectedItem());
-//        this.addListeners(commPortOrigin, commPortTarget);
-//        
-//        String content;
-//        //content = MainForm.addScapes(textAreaOrigin.getText());
-//        content = textAreaOrigin.getText();
-//        System.out.println("content: " + content);
-//        int idx = 0;
-//        int offset = 0;
-//        int exit = 0;
-//        int frameLength = 5;
-//        byte origin = 00000001;
-//        byte target = 00000010;
-//        do {
-//            String toFraming;
-//            if(exit == 1) {
-//                toFraming = content.substring(offset, content.length());
-//                byte[] frame = MainForm.framming(toFraming, origin);
-//                System.out.println("\nframming: ");
-//                for (int i = 0; i < frame.length; ++i)
-//                    System.out.print((char)frame[i]);
-//                System.out.println("\n");
-//                this.send(commPortOrigin, frame);
-//                break;
-//            } else {
-//                if(content.length()-1 < frameLength) {
-//                    toFraming = content.substring(offset, content.length());
-//                    byte[] frame = MainForm.framming(toFraming, origin);
-//                    System.out.println("\nframming: ");
-//                    for (int i = 0; i < frame.length; ++i)
-//                        System.out.print((char)frame[i]);
-//                    System.out.println("\n");
-//                    this.send(commPortOrigin, frame);
-//                    break;
-//                } 
-//                
-//                toFraming = content.substring(offset, offset+frameLength);
-//                offset+=frameLength;
-//                if((content.length() - offset) < content.length()) {
-//                    exit = 1;
-//                }
-//                
-//            
-//            }
-//            
-//            
-//            byte[] frame = MainForm.framming(toFraming, origin);
-//            System.out.println("\nframming: ");
-//            for (int i = 0; i < frame.length; ++i)
-//                System.out.print((char)frame[i]);
-//            System.out.println("\n");
-//            this.send(commPortOrigin, frame);
-//            idx++;
-//        } while(true);
-    }//GEN-LAST:event_sendButtonActionPerformed
-
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
-        SerialPort commPortOrigin = SerialPort.getCommPort((String) dropboxOrigin.getSelectedItem());
-        SerialPort commPortTarget = SerialPort.getCommPort((String) dropboxTarget.getSelectedItem());
-        commPortOrigin.closePort();
-        commPortTarget.closePort();
+        if(dropbox.getSelectedItem().toString().length() > 0 && dropbox.getSelectedItem().toString() != "- -") {
+            SerialPort commPortOrigin = SerialPort.getCommPort(dropbox.getSelectedItem().toString());
+            commPortOrigin.closePort();
+        }
     }//GEN-LAST:event_formWindowClosing
-
-    private void dropboxOriginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxOriginActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_dropboxOriginActionPerformed
 
     private void receiveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_receiveButtonActionPerformed
         // TODO add your handling code here:
         HandleReceive handleReceive = new HandleReceive(
-                                        (String) dropboxTarget.getSelectedItem(),
-                                         textAreaTarget
-                                    );
+            dropbox.getSelectedItem().toString(),
+            textArea
+        );
         handleReceive.startReader();
     }//GEN-LAST:event_receiveButtonActionPerformed
+
+    private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
+        // TODO add your handling code here:
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+            "Selecione apenas seu arquivo",
+            "txt", "jpg", "csv", "png", "jspn"
+        );
+        fileChooser.setFileFilter(filter);
+
+        int chooserReturn = fileChooser.showOpenDialog(null);
+
+        if(chooserReturn == JFileChooser.APPROVE_OPTION) {
+            inputFilePicker.setText(fileChooser.getSelectedFile().getAbsolutePath());
+        }
+
+        this.file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+    }//GEN-LAST:event_openFileActionPerformed
+
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        String content = "";
+        try {
+            if(this.file == null) {
+                content = textArea.getText();
+            } else {
+                int r;
+                FileInputStream fis = new FileInputStream(this.file);
+                while ((r=fis.read())!=-1) {
+                    content += (char) r;
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        LinkedHashMap<String,javax.swing.JTextPane> stats = new LinkedHashMap<String,javax.swing.JTextPane>();
+        stats.put("frames", txtFrames);
+        
+        
+        HandleSend handleSend = new HandleSend(
+            content,
+            dropbox.getSelectedItem().toString(),
+            this.file == null ? "" : this.file.getName(),
+            stats
+        );
+
+        handleSend.startTransaction();
+
+        //        SerialPort commPortOrigin = MainForm.openSerialConnection((String) dropboxOrigin.getSelectedItem());
+        //        SerialPort commPortTarget = MainForm.openSerialConnection((String) dropboxTarget.getSelectedItem());
+        //        this.addListeners(commPortOrigin, commPortTarget);
+        //
+        //        String content;
+        //        //content = MainForm.addScapes(textAreaOrigin.getText());
+        //        content = textAreaOrigin.getText();
+        //        System.out.println("content: " + content);
+        //        int idx = 0;
+        //        int offset = 0;
+        //        int exit = 0;
+        //        int frameLength = 5;
+        //        byte origin = 00000001;
+        //        byte target = 00000010;
+        //        do {
+            //            String toFraming;
+            //            if(exit == 1) {
+                //                toFraming = content.substring(offset, content.length());
+                //                byte[] frame = MainForm.framming(toFraming, origin);
+                //                System.out.println("\nframming: ");
+                //                for (int i = 0; i < frame.length; ++i)
+                //                    System.out.print((char)frame[i]);
+                //                System.out.println("\n");
+                //                this.send(commPortOrigin, frame);
+                //                break;
+                //            } else {
+                //                if(content.length()-1 < frameLength) {
+                    //                    toFraming = content.substring(offset, content.length());
+                    //                    byte[] frame = MainForm.framming(toFraming, origin);
+                    //                    System.out.println("\nframming: ");
+                    //                    for (int i = 0; i < frame.length; ++i)
+                    //                        System.out.print((char)frame[i]);
+                    //                    System.out.println("\n");
+                    //                    this.send(commPortOrigin, frame);
+                    //                    break;
+                    //                }
+                //
+                //                toFraming = content.substring(offset, offset+frameLength);
+                //                offset+=frameLength;
+                //                if((content.length() - offset) < content.length()) {
+                    //                    exit = 1;
+                    //                }
+                //
+                //
+                //            }
+            //
+            //
+            //            byte[] frame = MainForm.framming(toFraming, origin);
+            //            System.out.println("\nframming: ");
+            //            for (int i = 0; i < frame.length; ++i)
+            //                System.out.print((char)frame[i]);
+            //            System.out.println("\n");
+            //            this.send(commPortOrigin, frame);
+            //            idx++;
+            //        } while(true);
+    }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void dropboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_dropboxActionPerformed
 
     private static SerialPort openSerialConnection(String commPort)
     {
@@ -483,18 +527,19 @@ public class MainForm extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel MainFormPanel;
-    private javax.swing.JComboBox<String> dropboxOrigin;
-    private javax.swing.JComboBox<String> dropboxTarget;
-    private javax.swing.JTextField inputFilePickerOrigin;
+    private javax.swing.JComboBox<String> dropbox;
+    private javax.swing.JTextField inputFilePicker;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
-    private javax.swing.JButton openFileOrigin;
+    private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JButton openFile;
     private javax.swing.JButton receiveButton;
+    private java.awt.ScrollPane scrollPane1;
     private javax.swing.JButton sendButton;
-    private javax.swing.JTextArea textAreaOrigin;
-    private javax.swing.JTextArea textAreaTarget;
+    private javax.swing.JTextArea textArea;
+    private javax.swing.JTextPane txtFrames;
     // End of variables declaration//GEN-END:variables
 }

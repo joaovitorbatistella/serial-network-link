@@ -8,8 +8,13 @@ import com.mycompany.main.OriginThread;
 import com.fazecast.jSerialComm.*;
 import java.util.logging.Level;
 import com.mycompany.main.Framming;
+import java.awt.List;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.logging.Logger;
+import javax.swing.JTextPane;
 
 /**
  *
@@ -22,12 +27,16 @@ public class HandleSend {
     public SerialPort comm;
     public byte origin = 00000001;
     public byte target = 00000010;
+    public String fileName = "";
+    public LinkedHashMap<String,javax.swing.JTextPane> stats;
     private static final Framming framming = new Framming();
     
-    public HandleSend(String txt, String c1)
+    public HandleSend(String txt, String c1, String fileName, LinkedHashMap<String,javax.swing.JTextPane> stats)
     {
         this.message = txt;
         this.commOrigin = c1;
+        this.fileName = fileName;
+        this.stats = stats;
     }
     
     public synchronized void startTransaction() 
@@ -39,9 +48,9 @@ public class HandleSend {
         int idx = 0;
         int offset = 0;
         int exit = 0;
-        int frameLength = 5;
+        int frameLength = 10;
         try {
-            do {
+            do { 
                 String toFraming;
                 if (exit == 1) {
                     System.out.println("exit");
@@ -66,22 +75,21 @@ public class HandleSend {
                     }
 
                     toFraming = this.message.substring(offset, offset + frameLength);
+                    System.out.println("\n " + offset + " - " + frameLength);
                     offset += frameLength;
                     byte[] frame = HandleSend.framming.make(toFraming, this.origin, false);
                     this.send(frame);
-
                     if (!this.continueOrNot()) {
                         break;
                     }
                     
-                    if ((this.message.length() - offset) < this.message.length()) {
+                    if ((offset + frameLength) >= this.message.length()) {
                         exit = 1;
                     }
 
                 }
 
                 Thread.sleep(20);
- 
                 idx++;
             } while (true);
             this.comm.closePort();
@@ -90,7 +98,12 @@ public class HandleSend {
             this.comm.closePort();
             Logger.getLogger(OriginThread.class.getName()).log(Level.SEVERE, null, ex);
         }
+        JTextPane txtFrames = this.stats.get("frames");
+        if(txtFrames == null) {
+            return;
+        }
         
+        txtFrames.setText(String.valueOf(idx));
     }
     
     private void finishTransaction() {

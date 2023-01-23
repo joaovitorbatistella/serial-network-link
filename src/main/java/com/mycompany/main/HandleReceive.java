@@ -58,6 +58,7 @@ public class HandleReceive {
                         return;
                     }
                     this.message += this.getText(readBuffer);
+                    this.textAreaTarget.setText(this.message);
 
                     byte[] frame = HandleReceive.framming.make("", target, true);                    
                     this.send(frame);
