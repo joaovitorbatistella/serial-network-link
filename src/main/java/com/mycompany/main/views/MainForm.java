@@ -69,10 +69,11 @@ public class MainForm extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JSeparator();
         receiveButton = new javax.swing.JButton();
         jSeparator5 = new javax.swing.JSeparator();
-        scrollPane1 = new java.awt.ScrollPane();
+        java.awt.ScrollPane scrollPane1 = new java.awt.ScrollPane();
         jLabel3 = new javax.swing.JLabel();
         txtFrames = new javax.swing.JTextPane();
         jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
@@ -131,6 +132,16 @@ public class MainForm extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Estatísticas");
 
+        jLabel4.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel4.setFont(new java.awt.Font("Liberation Sans", 0, 18)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setText("X");
+        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                removeFile(evt);
+            }
+        });
+
         javax.swing.GroupLayout MainFormPanelLayout = new javax.swing.GroupLayout(MainFormPanel);
         MainFormPanel.setLayout(MainFormPanelLayout);
         MainFormPanelLayout.setHorizontalGroup(
@@ -141,7 +152,7 @@ public class MainForm extends javax.swing.JFrame {
                     .addGroup(MainFormPanelLayout.createSequentialGroup()
                         .addComponent(textArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 26, Short.MAX_VALUE)
                         .addGap(18, 18, 18))
                     .addGroup(MainFormPanelLayout.createSequentialGroup()
                         .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -157,7 +168,9 @@ public class MainForm extends javax.swing.JFrame {
                                 .addComponent(jLabel1))
                             .addComponent(dropbox, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(MainFormPanelLayout.createSequentialGroup()
-                                .addComponent(inputFilePicker, javax.swing.GroupLayout.PREFERRED_SIZE, 223, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(inputFilePicker, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(openFile)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -197,7 +210,8 @@ public class MainForm extends javax.swing.JFrame {
                 .addGap(12, 12, 12)
                 .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(openFile, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(inputFilePicker, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(inputFilePicker, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(MainFormPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -253,7 +267,11 @@ public class MainForm extends javax.swing.JFrame {
             dropbox.getSelectedItem().toString(),
             textArea
         );
-        handleReceive.startReader();
+        try {
+            handleReceive.startReader();
+        } catch (Exception ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_receiveButtonActionPerformed
 
     private void openFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileActionPerformed
@@ -271,7 +289,11 @@ public class MainForm extends javax.swing.JFrame {
             inputFilePicker.setText(fileChooser.getSelectedFile().getAbsolutePath());
         }
 
-        this.file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+        try {
+            this.file = new File(fileChooser.getSelectedFile().getAbsolutePath());            
+        } catch (Exception e) {
+            System.out.println("Error in create File object at MainForm: " + e.getMessage());
+        }
     }//GEN-LAST:event_openFileActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
@@ -303,68 +325,25 @@ public class MainForm extends javax.swing.JFrame {
             stats
         );
 
-        handleSend.startTransaction();
-
-        //        SerialPort commPortOrigin = MainForm.openSerialConnection((String) dropboxOrigin.getSelectedItem());
-        //        SerialPort commPortTarget = MainForm.openSerialConnection((String) dropboxTarget.getSelectedItem());
-        //        this.addListeners(commPortOrigin, commPortTarget);
-        //
-        //        String content;
-        //        //content = MainForm.addScapes(textAreaOrigin.getText());
-        //        content = textAreaOrigin.getText();
-        //        System.out.println("content: " + content);
-        //        int idx = 0;
-        //        int offset = 0;
-        //        int exit = 0;
-        //        int frameLength = 5;
-        //        byte origin = 00000001;
-        //        byte target = 00000010;
-        //        do {
-            //            String toFraming;
-            //            if(exit == 1) {
-                //                toFraming = content.substring(offset, content.length());
-                //                byte[] frame = MainForm.framming(toFraming, origin);
-                //                System.out.println("\nframming: ");
-                //                for (int i = 0; i < frame.length; ++i)
-                //                    System.out.print((char)frame[i]);
-                //                System.out.println("\n");
-                //                this.send(commPortOrigin, frame);
-                //                break;
-                //            } else {
-                //                if(content.length()-1 < frameLength) {
-                    //                    toFraming = content.substring(offset, content.length());
-                    //                    byte[] frame = MainForm.framming(toFraming, origin);
-                    //                    System.out.println("\nframming: ");
-                    //                    for (int i = 0; i < frame.length; ++i)
-                    //                        System.out.print((char)frame[i]);
-                    //                    System.out.println("\n");
-                    //                    this.send(commPortOrigin, frame);
-                    //                    break;
-                    //                }
-                //
-                //                toFraming = content.substring(offset, offset+frameLength);
-                //                offset+=frameLength;
-                //                if((content.length() - offset) < content.length()) {
-                    //                    exit = 1;
-                    //                }
-                //
-                //
-                //            }
-            //
-            //
-            //            byte[] frame = MainForm.framming(toFraming, origin);
-            //            System.out.println("\nframming: ");
-            //            for (int i = 0; i < frame.length; ++i)
-            //                System.out.print((char)frame[i]);
-            //            System.out.println("\n");
-            //            this.send(commPortOrigin, frame);
-            //            idx++;
-            //        } while(true);
+        try {
+            handleSend.startTransaction();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        this.file = null;
+        this.inputFilePicker.setText("");
     }//GEN-LAST:event_sendButtonActionPerformed
 
     private void dropboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dropboxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_dropboxActionPerformed
+
+    private void removeFile(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_removeFile
+        // TODO add your handling code here:
+        this.file = null;
+        this.inputFilePicker.setText("");
+    }//GEN-LAST:event_removeFile
 
     private static SerialPort openSerialConnection(String commPort)
     {
@@ -532,12 +511,12 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JButton openFile;
     private javax.swing.JButton receiveButton;
-    private java.awt.ScrollPane scrollPane1;
     private javax.swing.JButton sendButton;
     private javax.swing.JTextArea textArea;
     private javax.swing.JTextPane txtFrames;
