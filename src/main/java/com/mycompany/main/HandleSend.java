@@ -144,6 +144,7 @@ public class HandleSend {
     {
         SerialPort port = SerialPort.getCommPort(commPort);
         port.openPort();
+        port.setBaudRate(9600);
         return port;
     }
     

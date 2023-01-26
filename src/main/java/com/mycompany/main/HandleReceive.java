@@ -160,6 +160,7 @@ public class HandleReceive {
         System.out.println("commPort: " + commPort);
         SerialPort port = SerialPort.getCommPort(commPort);
         port.openPort();
+        port.setBaudRate(9600);
         return port;
     }
 }   
