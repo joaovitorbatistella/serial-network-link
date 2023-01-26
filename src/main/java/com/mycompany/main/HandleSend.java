@@ -30,7 +30,6 @@ public class HandleSend {
     public String fileName = "";
     public LinkedHashMap<String,javax.swing.JTextPane> stats;
     private static final Framming framming = new Framming();
-    public long start;
     
     public HandleSend(String txt, String c1, String fileName, LinkedHashMap<String,javax.swing.JTextPane> stats)
     {
@@ -50,14 +49,12 @@ public class HandleSend {
         int offset = 0;
         int exit = 0;
         int frameLength = 10;
-        this.start = System.nanoTime();
         if(!this.fileName.isEmpty()) {
             byte[] frame = HandleSend.framming.make(this.fileName, this.origin, false, true);
             this.send(frame);
             if (!this.continueOrNot(frame)) {
                 return;
             }
-            this.start = System.nanoTime();
         }
         
         try {
@@ -71,7 +68,6 @@ public class HandleSend {
                     if (!this.continueOrNot(frame)) {
                         break;
                     }
-                    this.start = System.nanoTime();
                     this.finishTransaction();
                     break;
                 } else {
@@ -82,11 +78,7 @@ public class HandleSend {
                         if (!this.continueOrNot(frame)) {
                             break;
                         }
-                        this.start = System.nanoTime();
                         this.finishTransaction();
-                        if (!this.continueOrNot(HandleSend.framming.make("", this.origin, false, false))) {
-                            break;
-                        }
                         break;
                     }
 
@@ -98,7 +90,6 @@ public class HandleSend {
                     if (!this.continueOrNot(frame)) {
                         break;
                     }
-                    this.start = System.nanoTime();
                     if ((offset + frameLength) >= this.message.length()) {
                         exit = 1;
                     }
@@ -127,12 +118,13 @@ public class HandleSend {
 
     private boolean continueOrNot(byte[] toRebroadcasting) throws InterruptedException {
         long timer = 100;
+        long start = System.nanoTime();
         while (true) {
-            timer*=1.05;
+            timer*=1.05;            
             if(timer > 100) {
                 Thread.sleep(timer);
             }
-            if ((System.nanoTime() - this.start) / 1000000000 >= 15) {
+            if ((System.nanoTime() - start) / 1000000000 >= 15) {
                 System.out.println("Timeout 01!");
                 return false;
             }
